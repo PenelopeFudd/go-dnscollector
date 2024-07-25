@@ -8,6 +8,8 @@ import (
 	"path"
 	"time"
 
+	"io/ioutil"
+
 	"github.com/dmachard/go-dnscollector/pkgconfig"
 	"github.com/dmachard/go-dnscollector/transformers"
 	"github.com/dmachard/go-logger"
@@ -199,7 +201,21 @@ func (w *ElasticSearchClient) sendBulk(bulk []byte) error {
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Content-Type", "application/json")
+
+        body, err := req.GetBody()
+
+        defer body.Close()
+        bodyBytes, err := ioutil.ReadAll(body)
+
+
+        w.LogInfo( fmt.Sprintf("Testing2 req=%+v\n",req) )
+        w.LogInfo( fmt.Sprintf("body: %s\n",string(bodyBytes) ) )
+        w.LogInfo( fmt.Sprintf("bulkURL=%s\n",w.bulkURL) )
+
+	req.Header.Set("Content-Type", "application/x-ndjson")
+        if ( w.GetConfig().Loggers.ElasticSearchClient.BasicAuthEnabled ) {
+          req.SetBasicAuth( w.GetConfig().Loggers.ElasticSearchClient.BasicAuthLogin, w.GetConfig().Loggers.ElasticSearchClient.BasicAuthPwd)
+        }
 
 	// Send the request using the HTTP client
 	resp, err := w.httpClient.Do(req)
@@ -207,6 +223,7 @@ func (w *ElasticSearchClient) sendBulk(bulk []byte) error {
 		return err
 	}
 	defer resp.Body.Close()
+        w.LogInfo( fmt.Sprintf("Testing resp=%+v\n",resp) )
 
 	// Check the response status code
 	if resp.StatusCode != http.StatusOK {
@@ -233,13 +250,20 @@ func (w *ElasticSearchClient) sendCompressedBulk(bulk []byte) error {
 		return err
 	}
 
+
+        w.LogInfo( fmt.Sprintf("Testing request length=%d\n",compressedBulk.Len()) )
+        w.LogInfo( fmt.Sprintf("bulkURL=%s\n",w.bulkURL) )
+
 	// Create a new HTTP request
 	req, err := http.NewRequest("POST", w.bulkURL, &compressedBulk)
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Type", "application/x-ndjson")
 	req.Header.Set("Content-Encoding", "gzip") // Set Content-Encoding header to gzip
+        if ( w.GetConfig().Loggers.ElasticSearchClient.BasicAuthEnabled ) {
+          req.SetBasicAuth( w.GetConfig().Loggers.ElasticSearchClient.BasicAuthLogin, w.GetConfig().Loggers.ElasticSearchClient.BasicAuthPwd)
+        }
 
 	// Send the request using the HTTP client
 	resp, err := w.httpClient.Do(req)
@@ -247,9 +271,11 @@ func (w *ElasticSearchClient) sendCompressedBulk(bulk []byte) error {
 		return err
 	}
 	defer resp.Body.Close()
+        w.LogInfo( fmt.Sprintf("Testing resp=%+v\n",resp) )
 
 	// Check the response status code
 	if resp.StatusCode != http.StatusOK {
+            
 		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
