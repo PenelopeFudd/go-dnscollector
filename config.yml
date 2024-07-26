@@ -7,7 +7,7 @@ global:
     verbose: true
   server-identity: "dns-collector"
   pid-file: ""
-  text-format: "timestamp-rfc3339ns identity operation rcode queryip queryport family protocol length-unit qname qtype latency"
+  text-format: "timestamp-rfc3339ns identity operation rcode queryip queryport family protocol length-unit qname qtype edns-csubnet latency answer"
   text-format-delimiter: " "
   text-format-boundary: "\""
   text-jinja: ""
@@ -34,18 +34,48 @@ global:
 #   transformers: https://github.com/dmachard/go-dnscollector/blob/main/docs/transformers.md
 ################################################
 pipelines:
+
+  - name: powerdns
+    powerdns:
+      listen-ip: 127.0.0.1
+      listen-port: 6001
+      tls-support: false
+      tls-min-version: 1.2
+      cert-file: ""
+      key-file: ""
+      reset-conn: true
+      chan-buffer-size: 0
+      add-dns-payload: true
+    routing-policy:
+      forward: [ console ]
+      dropped: [ ]
+
   - name: tap
     dnstap:
-      listen-ip: 0.0.0.0
+      listen-ip: 127.0.0.1
       listen-port: 6000
     transforms:
       normalize:
         qname-lowercase: true
         qname-replace-nonprintable: true
     routing-policy:
-      forward: [ console ]
+      forward: [ elastic ]
       dropped: [ ]
 
   - name: console
     stdout:
-      mode: text
+      mode: json
+
+  - name: elastic
+    elasticsearch:
+      server: "https://elasticsearch.infra.example.com/"
+      index:  "dnscollector"
+      chan-buffer-size: 0
+      bulk-size: 1000000 # 1MB
+      flush-interval: 10 # in seconds
+      compression: none
+      bulk-channel-size: 10
+      basic-auth-enable: true
+      basic-auth-login: ingester
+      basic-auth-pwd: changeme
+      curl-tracing-enable: false

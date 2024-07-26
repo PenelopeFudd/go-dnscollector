@@ -222,17 +222,18 @@ type ConfigLoggers struct {
 		ChannelBufferSize int    `yaml:"chan-buffer-size" default:"0"`
 	} `yaml:"statsd"`
 	ElasticSearchClient struct {
-		Enable            bool   `yaml:"enable" default:"false"`
-		Index             string `yaml:"index" default:"dnscollector"`
-		Server            string `yaml:"server" default:"http://127.0.0.1:9200/"`
-		ChannelBufferSize int    `yaml:"chan-buffer-size" default:"0"`
-		BulkSize          int    `yaml:"bulk-size" default:"5242880"`
-		BulkChannelSize   int    `yaml:"bulk-channel-size" default:"10"`
-		FlushInterval     int    `yaml:"flush-interval" default:"10"`
-		Compression       string `yaml:"compression" default:"none"`
-		BasicAuthEnabled  bool   `yaml:"basic-auth-enable" default:"false"`
-		BasicAuthLogin    string `yaml:"basic-auth-login" default:""`
-		BasicAuthPwd      string `yaml:"basic-auth-pwd" default:""`
+		Enable             bool   `yaml:"enable" default:"false"`
+		Index              string `yaml:"index" default:"dnscollector"`
+		Server             string `yaml:"server" default:"http://127.0.0.1:9200/"`
+		ChannelBufferSize  int    `yaml:"chan-buffer-size" default:"0"`
+		BulkSize           int    `yaml:"bulk-size" default:"5242880"`
+		BulkChannelSize    int    `yaml:"bulk-channel-size" default:"10"`
+		FlushInterval      int    `yaml:"flush-interval" default:"10"`
+		Compression        string `yaml:"compression" default:"none"`
+		BasicAuthEnabled   bool   `yaml:"basic-auth-enable" default:"false"`
+		BasicAuthLogin     string `yaml:"basic-auth-login" default:""`
+		BasicAuthPwd       string `yaml:"basic-auth-pwd" default:""`
+		CurlTracingEnabled bool   `yaml:"curl-tracing-enable" default:"false"`
 	} `yaml:"elasticsearch"`
 	ScalyrClient struct {
 		Enable            bool                   `yaml:"enable" default:"false"`

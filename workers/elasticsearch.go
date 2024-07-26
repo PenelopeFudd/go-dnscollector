@@ -8,7 +8,7 @@ import (
 	"path"
 	"time"
 
-	"io/ioutil"
+	"moul.io/http2curl"
 
 	"github.com/dmachard/go-dnscollector/pkgconfig"
 	"github.com/dmachard/go-dnscollector/transformers"
@@ -202,20 +202,15 @@ func (w *ElasticSearchClient) sendBulk(bulk []byte) error {
 		return err
 	}
 
-        body, err := req.GetBody()
-
-        defer body.Close()
-        bodyBytes, err := ioutil.ReadAll(body)
-
-
-        w.LogInfo( fmt.Sprintf("Testing2 req=%+v\n",req) )
-        w.LogInfo( fmt.Sprintf("body: %s\n",string(bodyBytes) ) )
-        w.LogInfo( fmt.Sprintf("bulkURL=%s\n",w.bulkURL) )
-
 	req.Header.Set("Content-Type", "application/x-ndjson")
-        if ( w.GetConfig().Loggers.ElasticSearchClient.BasicAuthEnabled ) {
-          req.SetBasicAuth( w.GetConfig().Loggers.ElasticSearchClient.BasicAuthLogin, w.GetConfig().Loggers.ElasticSearchClient.BasicAuthPwd)
-        }
+	if ( w.GetConfig().Loggers.ElasticSearchClient.BasicAuthEnabled ) {
+	  req.SetBasicAuth( w.GetConfig().Loggers.ElasticSearchClient.BasicAuthLogin, w.GetConfig().Loggers.ElasticSearchClient.BasicAuthPwd)
+	}
+
+	if ( w.GetConfig().Loggers.ElasticSearchClient.CurlTracingEnabled ) {
+	  command, _ := http2curl.GetCurlCommand(req)
+          fmt.Println(command)
+	}
 
 	// Send the request using the HTTP client
 	resp, err := w.httpClient.Do(req)
@@ -223,7 +218,6 @@ func (w *ElasticSearchClient) sendBulk(bulk []byte) error {
 		return err
 	}
 	defer resp.Body.Close()
-        w.LogInfo( fmt.Sprintf("Testing resp=%+v\n",resp) )
 
 	// Check the response status code
 	if resp.StatusCode != http.StatusOK {
@@ -251,8 +245,6 @@ func (w *ElasticSearchClient) sendCompressedBulk(bulk []byte) error {
 	}
 
 
-        w.LogInfo( fmt.Sprintf("Testing request length=%d\n",compressedBulk.Len()) )
-        w.LogInfo( fmt.Sprintf("bulkURL=%s\n",w.bulkURL) )
 
 	// Create a new HTTP request
 	req, err := http.NewRequest("POST", w.bulkURL, &compressedBulk)
@@ -271,7 +263,6 @@ func (w *ElasticSearchClient) sendCompressedBulk(bulk []byte) error {
 		return err
 	}
 	defer resp.Body.Close()
-        w.LogInfo( fmt.Sprintf("Testing resp=%+v\n",resp) )
 
 	// Check the response status code
 	if resp.StatusCode != http.StatusOK {

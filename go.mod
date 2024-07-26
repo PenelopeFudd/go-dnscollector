@@ -130,6 +130,7 @@ require (
 	github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529 // indirect
 	github.com/sercand/kuberesolver/v5 v5.1.1 // indirect
 	github.com/shopspring/decimal v1.2.0 // indirect
+	github.com/smartystreets/goconvey v1.8.1 // indirect
 	github.com/sony/gobreaker v0.5.0 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
@@ -178,6 +179,8 @@ require (
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 	inet.af/netaddr v0.0.0-20211027220019-c74959edd3b6
+	moul.io/http2curl v1.0.0 // shows an http request as a curl command
+
 )
 
 // Pin grpc to previous version: using newer version breaks kuberesolver, but updating kuberesolver needs to be done in weaveworks/common.
